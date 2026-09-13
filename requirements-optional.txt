@@ -1,0 +1,4 @@
+# Extras that are NOT needed by the deployed backend.
+# Install with:  pip install -r requirements-optional.txt
+streamlit>=1.50     # for the optional local dashboard, app.py
+jupyter>=1.0        # for notebooks/sales_prediction.ipynb

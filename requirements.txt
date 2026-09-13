@@ -1,0 +1,20 @@
+# Python dependencies for the project.
+# These are the exact versions the models were trained and tested with.
+# scikit-learn MUST stay at 1.4.2, because trained_models.pkl was saved with
+# that version and a different version may fail to load it.
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.4.2
+joblib==1.4.2
+
+# Used by src/model.py to draw the graphs in outputs/graphs
+matplotlib==3.8.4
+seaborn==0.13.2
+
+# The website backend (backend/main.py), deployed on Render
+fastapi>=0.115
+uvicorn>=0.30
+pydantic>=2.7
+
+# Optional extras (Streamlit dashboard, Jupyter notebook) are in
+# requirements-optional.txt so the production server does not install them.

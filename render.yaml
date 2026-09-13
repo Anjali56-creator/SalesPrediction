@@ -1,0 +1,18 @@
+# Render "Blueprint" - describes how to run the backend on https://render.com
+# Render reads this file automatically when you create a new Blueprint service
+# from the GitHub repository.
+services:
+  - type: web
+    name: sales-prediction-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # The Vercel URL of the website, so CORS lets it call this API.
+      # Fill this in on the Render dashboard after the frontend is deployed.
+      - key: FRONTEND_URL
+        sync: false

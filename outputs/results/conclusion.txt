@@ -1,0 +1,39 @@
+
+===========================================================================
+ FINAL CONCLUSION
+===========================================================================
+
+ Linear Regression  ->  R2 = 0.6925
+ Decision Tree      ->  R2 = 0.6631
+ Random Forest      ->  R2 = 0.7411
+
+ BEST MODEL: Random Forest
+ (MAE = 646.58, MSE = 1130070.81, RMSE = 1063.05, R2 = 0.7411)
+
+ Why this result makes sense:
+
+ * Random Forest performed best. It trains many different decision trees on
+   slightly different samples of the data and averages their answers. The
+   mistakes of individual trees cancel each other out, so the final prediction
+   is both more accurate and more stable than any single model here.
+
+ * Linear Regression came second. It assumes sales rise in a straight line as
+   quantity and price rise. Since sales really are close to
+   quantity x price, a straight-line model already captures a large part of
+   the pattern, which is why it does respectably well. What it cannot capture
+   is the multiplying effect between the two, so it still loses to the forest.
+
+ * Decision Tree came last, which is a genuinely useful result to discuss.
+   A single tree predicts a constant value for every order that lands in the
+   same leaf, so it produces a "staircase" of predictions instead of a smooth
+   line. It also memorises the particular training rows it saw, so it does not
+   generalise as well to new orders. This is exactly the weakness that Random
+   Forest fixes by averaging many trees together.
+
+ * The lesson of the comparison: a single tree is NOT automatically better
+   than a simple linear model. It is the combination of many trees that wins.
+
+ Practical meaning: the best model's RMSE of about 1063.05 means the
+ typical prediction is off by roughly that amount, compared with an average
+ order value of about 3554.
+===========================================================================
