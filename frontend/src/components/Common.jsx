@@ -1,11 +1,38 @@
 /*
  * Common.jsx
  * ----------
- * Small pieces that several pages reuse: the loading spinner, the error
- * message, a page heading and a card wrapper.
+ * Small pieces that several sections reuse: the section heading, the figure
+ * wrapper for charts, the loading spinner, the error message and the useApi
+ * hook that fetches data from the backend.
  */
 
 import { useEffect, useState } from "react";
+
+/* The heading block at the top of every section: number, label, headline. */
+export function SectionHead({ number, label, children }) {
+  return (
+    <div className="section-head">
+      <p className="eyebrow">
+        <span className="num">{number}</span>
+        {label}
+      </p>
+      <h2>{children}</h2>
+    </div>
+  );
+}
+
+/* A chart with a title and caption, like a figure in a report. */
+export function Figure({ title, caption, children, wide }) {
+  return (
+    <figure className={wide ? "figure wide" : "figure"}>
+      <figcaption>
+        <strong>{title}</strong>
+        {caption && <span>{caption}</span>}
+      </figcaption>
+      {children}
+    </figure>
+  );
+}
 
 /* Shown while we are waiting for the backend to answer. */
 export function Loading({ what = "data" }) {
@@ -35,31 +62,11 @@ export function ErrorBox({ message }) {
   );
 }
 
-export function PageHead({ step, title, children }) {
-  return (
-    <div className="page-head">
-      <p className="eyebrow">{step}</p>
-      <h1>{title}</h1>
-      <p>{children}</p>
-    </div>
-  );
-}
-
-export function Card({ title, note, children, style }) {
-  return (
-    <div className="card" style={style}>
-      {title && <h3 className="card-title">{title}</h3>}
-      {note && <p className="card-note">{note}</p>}
-      {children}
-    </div>
-  );
-}
-
 /*
  * useApi: a small custom hook.
  *
- * Every page needs the same three things - the data, a "still loading" flag,
- * and an error message. Writing it once here keeps the pages short.
+ * Every section needs the same three things - the data, a "still loading"
+ * flag, and an error message. Writing it once here keeps the sections short.
  */
 export function useApi(fetchFunction) {
   const [data, setData] = useState(null);
@@ -80,7 +87,7 @@ export function useApi(fetchFunction) {
         if (!cancelled) setLoading(false);
       });
 
-    // If the user switches page before the answer arrives, ignore the answer.
+    // If the component unmounts before the answer arrives, ignore the answer.
     return () => {
       cancelled = true;
     };

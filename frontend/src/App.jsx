@@ -1,102 +1,139 @@
 /*
  * App.jsx
  * -------
- * The main shell of the website: the sidebar navigation on the left, and
- * whichever page the user has selected on the right.
+ * The whole website is one scrolling page, laid out like a project case study:
  *
- * We keep the current page in a simple piece of state called `page`. This is
- * easier to explain than a routing library, and works perfectly for five pages.
+ *   header (sticky navigation)
+ *   hero
+ *   01 overview
+ *   02 dataset & methodology
+ *   03 sales insights
+ *   04 model comparison
+ *   05 predict sales
+ *   footer
+ *
+ * The navigation links are ordinary anchor links (#insights etc.). A small
+ * IntersectionObserver watches which section is on screen so the matching
+ * link can be underlined.
  */
 
 import { useEffect, useState } from "react";
 
 import { API_BASE } from "./api";
-import Analytics from "./pages/Analytics";
-import Dashboard from "./pages/Dashboard";
-import Home from "./pages/Home";
-import ModelComparison from "./pages/ModelComparison";
-import Predict from "./pages/Predict";
+import Comparison from "./sections/Comparison";
+import Hero from "./sections/Hero";
+import Insights from "./sections/Insights";
+import Methodology from "./sections/Methodology";
+import Overview from "./sections/Overview";
+import Predict from "./sections/Predict";
 import "./styles.css";
 
-// The five sections of the website, in the order they appear in the sidebar.
-const PAGES = [
-  { id: "home", step: "01", label: "Home" },
-  { id: "dashboard", step: "02", label: "Dashboard" },
-  { id: "analytics", step: "03", label: "Sales Analytics" },
-  { id: "comparison", step: "04", label: "Model Comparison" },
-  { id: "predict", step: "05", label: "Sales Prediction" },
+// The sections of the page, in order. Each id matches a <section id="...">.
+const SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "methodology", label: "Dataset & Method" },
+  { id: "insights", label: "Insights" },
+  { id: "comparison", label: "Model Comparison" },
+  { id: "predict", label: "Predict" },
 ];
 
-/* Lets a link like  ?page=predict  open that section directly. */
-function pageFromUrl() {
-  const wanted = new URLSearchParams(window.location.search).get("page");
-  return PAGES.some((item) => item.id === wanted) ? wanted : "home";
-}
-
 export default function App() {
-  const [page, setPage] = useState(pageFromUrl);
+  const [active, setActive] = useState("");
   const [backendUp, setBackendUp] = useState(null);
 
-  // Check once, on load, whether the Python backend is running. This is what
-  // powers the little green/red dot at the bottom of the sidebar.
+  // Check once, on load, whether the Python backend is reachable. This powers
+  // the small status pill in the header.
   useEffect(() => {
     fetch(`${API_BASE}/api/health`)
       .then((response) => setBackendUp(response.ok))
       .catch(() => setBackendUp(false));
   }, []);
 
-  function goTo(nextPage) {
-    setPage(nextPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  // Underline the nav link of whichever section is currently in view.
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    );
+    SECTIONS.forEach((section) => {
+      const element = document.getElementById(section.id);
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="app">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">SP</div>
-          <div className="brand-text">
-            <strong>Sales Prediction</strong>
-            <span>ML Mini Project</span>
+    <>
+      <header className="site-header">
+        <div className="wrap header-inner">
+          <a href="#top" className="brand">
+            <span className="brand-mark" />
+            <span className="brand-name">Sales Prediction</span>
+            <span className="brand-tag">ML Case Study</span>
+          </a>
+
+          <nav className="site-nav" aria-label="Sections">
+            {SECTIONS.map((section) => (
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                className={active === section.id ? "active" : ""}
+              >
+                {section.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="header-side">
+            <span className={"status" + (backendUp === false ? " down" : "")}>
+              <span className="dot" />
+              {backendUp === null && "connecting"}
+              {backendUp === true && "API live"}
+              {backendUp === false && "API offline"}
+            </span>
+            <a href="#predict" className="btn small">
+              Try it
+            </a>
           </div>
         </div>
+      </header>
 
-        <nav className="nav">
-          <p className="nav-label">Sections</p>
-          {PAGES.map((item) => (
-            <button
-              key={item.id}
-              className={page === item.id ? "active" : ""}
-              onClick={() => goTo(item.id)}
-            >
-              <span className="step">{item.step}</span>
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-foot">
-          <span className={backendUp === false ? "dot down" : "dot"} />
-          {backendUp === null && "checking backend…"}
-          {backendUp === true && "backend connected"}
-          {backendUp === false && "backend offline"}
-          <br />
-          <br />
-          Linear Regression
-          <br />
-          Decision Tree
-          <br />
-          Random Forest
-        </div>
-      </aside>
-
-      <main className="content">
-        {page === "home" && <Home onExplore={goTo} />}
-        {page === "dashboard" && <Dashboard />}
-        {page === "analytics" && <Analytics />}
-        {page === "comparison" && <ModelComparison />}
-        {page === "predict" && <Predict />}
+      <main id="top">
+        <Hero />
+        <Overview />
+        <Methodology />
+        <Insights />
+        <Comparison />
+        <Predict />
       </main>
-    </div>
+
+      <footer className="site-footer">
+        <div className="wrap footer-inner">
+          <div>
+            <p className="footer-title">Comparative Analysis of Sales Prediction</p>
+            <p className="footer-sub">
+              B.Tech CSE mini project · Linear Regression vs Decision Tree vs Random Forest
+            </p>
+          </div>
+          <div className="footer-links">
+            <a href={`${API_BASE}/docs`} target="_blank" rel="noreferrer">
+              API documentation
+            </a>
+            <a
+              href="https://github.com/Anjali56-creator/SalesPrediction"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Source code
+            </a>
+            <a href="#top">Back to top</a>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

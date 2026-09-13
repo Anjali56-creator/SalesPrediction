@@ -52,8 +52,8 @@ npm run dev
 
 Then open **http://localhost:5173** in your browser.
 
-The small dot at the bottom of the sidebar turns **green** when the website has
-successfully connected to the backend, and **red** if the backend is not running.
+The small status pill in the header reads **API live** when the website has
+successfully connected to the backend, and **API offline** if it is not running.
 
 ---
 

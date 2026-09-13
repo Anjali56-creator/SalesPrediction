@@ -249,16 +249,18 @@ sales_prediction/
 │   ├── index.html
 │   ├── package.json
 │   └── src/
-│       ├── App.jsx                      # sidebar + page switching
+│       ├── App.jsx                      # header nav + the sections in order
 │       ├── api.js                       # every call to the backend
-│       ├── styles.css
-│       ├── components/Common.jsx        # loading, error, card, useApi hook
-│       └── pages/
-│           ├── Home.jsx                 # 1. Home / Overview
-│           ├── Dashboard.jsx            # 2. Dashboard KPIs
-│           ├── Analytics.jsx            # 3. Sales Analytics
-│           ├── ModelComparison.jsx      # 4. Model Comparison
-│           └── Predict.jsx              # 5. Sales Prediction
+│       ├── theme.js                     # chart colour palette
+│       ├── styles.css                   # design tokens + all styling
+│       ├── components/Common.jsx        # section heading, figure, loading, error, useApi
+│       └── sections/                    # one file per section of the page
+│           ├── Hero.jsx                 #    title + headline result
+│           ├── Overview.jsx             # 01 project overview + pipeline
+│           ├── Methodology.jsx          # 02 dataset, features, models, metrics
+│           ├── Insights.jsx             # 03 sales analytics charts
+│           ├── Comparison.jsx           # 04 model comparison
+│           └── Predict.jsx              # 05 live prediction form
 │
 ├── app.py                               # Streamlit dashboard (alternative)
 ├── README.md

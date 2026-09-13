@@ -1,5 +1,5 @@
 /*
- * Predict.jsx  --  Section 5: Sales Prediction
+ * Predict.jsx  --  05 · Predict sales
  *
  * The form fields come from the backend, so they always match the features the
  * models were actually trained on. Clicking "Predict Sales" sends the values to
@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 
 import { formatRupees, getFormOptions, postPrediction } from "../api";
-import { Card, ErrorBox, Loading, PageHead, useApi } from "../components/Common";
+import { ErrorBox, Loading, SectionHead, useApi } from "../components/Common";
 
 export default function Predict() {
   const { data: options, loading, error } = useApi(getFormOptions);
@@ -43,8 +43,14 @@ export default function Predict() {
     }));
   }, [options]);
 
-  if (loading) return <Loading what="the prediction form" />;
-  if (error) return <ErrorBox message={error} />;
+  if (loading || error) {
+    return (
+      <Shell>
+        {loading && <Loading what="the prediction form" />}
+        {error && <ErrorBox message={error} />}
+      </Shell>
+    );
+  }
 
   /* Updates one field whenever the user types or chooses something. */
   function updateField(name, value) {
@@ -75,14 +81,13 @@ export default function Predict() {
   const msrpRange = options.numeric.MSRP;
 
   return (
-    <>
-      <PageHead step="Section 05 · Sales Prediction" title="Sales Prediction">
-        Enter the details of an order and the trained model will predict its revenue.
-        The fields below are exactly the features the models were trained on.
-      </PageHead>
-
+    <Shell>
       <div className="predict-layout">
-        <Card title="Order details" note="All fields are required">
+        <div className="form-panel">
+          <p className="panel-title">Order details</p>
+          <p className="panel-note">
+            The fields are exactly the features the models were trained on.
+          </p>
           <form onSubmit={handleSubmit}>
             <div className="field-grid">
               <div className="field">
@@ -203,7 +208,7 @@ export default function Predict() {
               </div>
             )}
           </form>
-        </Card>
+        </div>
 
         <div className="result-panel">
           {result ? (
@@ -259,6 +264,20 @@ export default function Predict() {
         columns used in training, reindexes them into the same order, and calls{" "}
         <code>model.predict()</code>. The number you see is the model's real output.
       </p>
-    </>
+    </Shell>
+  );
+}
+
+/* The section frame around the form, shared by the loading/error/ready states. */
+function Shell({ children }) {
+  return (
+    <section id="predict" className="section">
+      <div className="wrap">
+        <SectionHead number="05" label="Predict sales">
+          Run your own order through the trained models.
+        </SectionHead>
+        {children}
+      </div>
+    </section>
   );
 }
