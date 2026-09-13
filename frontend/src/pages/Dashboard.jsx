@@ -15,6 +15,7 @@ import {
 
 import { formatCompact, formatRupees, getAnalytics, getKpis } from "../api";
 import { Card, ErrorBox, Loading, PageHead, useApi } from "../components/Common";
+import { AXIS, GRID, SERIES_MAIN } from "../theme";
 
 /* A tooltip styled to match the rest of the site. */
 function ChartTip({ active, payload, label, prefix = "" }) {
@@ -95,12 +96,12 @@ export default function Dashboard() {
             >
               <defs>
                 <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#176a58" stopOpacity={0.28} />
-                  <stop offset="100%" stopColor="#176a58" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor={SERIES_MAIN} stopOpacity={0.28} />
+                  <stop offset="100%" stopColor={SERIES_MAIN} stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#e7ecf1" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={{ stroke: "#dde3ea" }} interval={3} />
+              <CartesianGrid stroke={GRID} vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={{ stroke: AXIS }} interval={3} />
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -111,10 +112,10 @@ export default function Dashboard() {
               <Area
                 type="monotone"
                 dataKey="sales"
-                stroke="#176a58"
+                stroke={SERIES_MAIN}
                 strokeWidth={2}
                 fill="url(#trendFill)"
-                dot={{ r: 2.5, fill: "#176a58", strokeWidth: 0 }}
+                dot={{ r: 2.5, fill: SERIES_MAIN, strokeWidth: 0 }}
                 activeDot={{ r: 5 }}
               />
             </AreaChart>

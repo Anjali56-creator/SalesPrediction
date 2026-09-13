@@ -23,6 +23,17 @@ import {
 
 import { formatCompact, formatRupees, getModels } from "../api";
 import { Card, ErrorBox, Loading, PageHead, useApi } from "../components/Common";
+import {
+  AXIS,
+  CURSOR,
+  GRID,
+  REFERENCE_LINE,
+  SERIES_HIGHLIGHT,
+  SERIES_MAIN,
+  SERIES_MUTED,
+  SERIES_SECONDARY,
+  TICK,
+} from "../theme";
 
 function MetricTip({ active, payload, label, decimals = 2 }) {
   if (!active || !payload || !payload.length) return null;
@@ -63,6 +74,26 @@ export default function ModelComparison() {
         All three models were trained on the same {(2823 - data.testSize).toLocaleString("en-IN")} training
         rows and judged on the same {data.testSize} test rows they had never seen.
       </PageHead>
+
+      {/* Headline result, read from the backend - not typed in by hand. */}
+      <div className="winner">
+        <div>
+          <p className="label">Best model</p>
+          <p className="name">{data.bestModel}</p>
+        </div>
+        <div>
+          <p className="label">R² score</p>
+          <p className="stat">{best.R2.toFixed(4)}</p>
+        </div>
+        <div>
+          <p className="label">RMSE</p>
+          <p className="stat">{best.RMSE.toFixed(2)}</p>
+        </div>
+        <div>
+          <p className="label">MAE</p>
+          <p className="stat">{best.MAE.toFixed(2)}</p>
+        </div>
+      </div>
 
       <div className="tablewrap">
         <table>
@@ -106,20 +137,20 @@ export default function ModelComparison() {
         <Card title="R² score" note="Higher is better — how much variation is explained">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={data.models} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
-              <CartesianGrid stroke="#e7ecf1" vertical={false} />
+              <CartesianGrid stroke={GRID} vertical={false} />
               <XAxis
                 dataKey="Model"
                 tickLine={false}
-                axisLine={{ stroke: "#dde3ea" }}
+                axisLine={{ stroke: AXIS }}
                 tick={{ fontSize: 10 }}
               />
               <YAxis domain={[0, 0.8]} tickLine={false} axisLine={false} width={44} />
-              <Tooltip content={<MetricTip decimals={4} />} cursor={{ fill: "#f1f4f7" }} />
+              <Tooltip content={<MetricTip decimals={4} />} cursor={{ fill: CURSOR }} />
               <Bar dataKey="R2" radius={[3, 3, 0, 0]}>
                 {data.models.map((row) => (
                   <Cell
                     key={row.Model}
-                    fill={row.Model === data.bestModel ? "#176a58" : "#9aa7b4"}
+                    fill={row.Model === data.bestModel ? SERIES_HIGHLIGHT : SERIES_MUTED}
                   />
                 ))}
               </Bar>
@@ -130,21 +161,21 @@ export default function ModelComparison() {
         <Card title="MAE and RMSE" note="Lower is better — the size of the error">
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={data.models} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
-              <CartesianGrid stroke="#e7ecf1" vertical={false} />
+              <CartesianGrid stroke={GRID} vertical={false} />
               <XAxis
                 dataKey="Model"
                 tickLine={false}
-                axisLine={{ stroke: "#dde3ea" }}
+                axisLine={{ stroke: AXIS }}
                 tick={{ fontSize: 10 }}
               />
               <YAxis tickLine={false} axisLine={false} width={52} />
-              <Tooltip cursor={{ fill: "#f1f4f7" }} />
-              <Bar dataKey="MAE" fill="#63bda8" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="RMSE" fill="#0f4d3f" radius={[3, 3, 0, 0]} />
+              <Tooltip cursor={{ fill: CURSOR }} />
+              <Bar dataKey="MAE" fill={SERIES_SECONDARY} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="RMSE" fill={SERIES_MAIN} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <p className="note">
-            Darker bars are RMSE. RMSE is always higher than MAE because it punishes
+            Purple bars are RMSE, blue bars are MAE. RMSE is always higher than MAE because it punishes
             large errors more heavily.
           </p>
         </Card>
@@ -172,18 +203,18 @@ export default function ModelComparison() {
 
           <ResponsiveContainer width="100%" height={360}>
             <ScatterChart margin={{ top: 8, right: 20, left: 8, bottom: 16 }}>
-              <CartesianGrid stroke="#e7ecf1" />
+              <CartesianGrid stroke={GRID} />
               <XAxis
                 type="number"
                 dataKey="actual"
                 tickFormatter={formatCompact}
                 tickLine={false}
-                axisLine={{ stroke: "#dde3ea" }}
+                axisLine={{ stroke: AXIS }}
                 label={{
                   value: "Actual sales",
                   position: "insideBottom",
                   offset: -8,
-                  fill: "#6b7785",
+                  fill: TICK,
                   fontSize: 11,
                 }}
               />
@@ -198,23 +229,23 @@ export default function ModelComparison() {
                   value: "Predicted sales",
                   angle: -90,
                   position: "insideLeft",
-                  fill: "#6b7785",
+                  fill: TICK,
                   fontSize: 11,
                 }}
               />
               <Tooltip content={<PointTip />} cursor={{ strokeDasharray: "3 3" }} />
-              {/* The red dashed diagonal: a perfect prediction would sit on it. */}
+              {/* The magenta dashed diagonal: a perfect prediction would sit on it. */}
               <ReferenceLine
                 segment={[
                   { x: 0, y: 0 },
                   { x: maxValue, y: maxValue },
                 ]}
-                stroke="#a8372a"
+                stroke={REFERENCE_LINE}
                 strokeWidth={1.5}
                 strokeDasharray="6 4"
                 ifOverflow="extendDomain"
               />
-              <Scatter data={points} fill="#176a58" fillOpacity={0.4} />
+              <Scatter data={points} fill={SERIES_MAIN} fillOpacity={0.4} />
             </ScatterChart>
           </ResponsiveContainer>
 
@@ -239,8 +270,8 @@ export default function ModelComparison() {
               layout="vertical"
               margin={{ top: 4, right: 20, left: 8, bottom: 4 }}
             >
-              <CartesianGrid stroke="#e7ecf1" horizontal={false} />
-              <XAxis type="number" tickLine={false} axisLine={{ stroke: "#dde3ea" }} />
+              <CartesianGrid stroke={GRID} horizontal={false} />
+              <XAxis type="number" tickLine={false} axisLine={{ stroke: AXIS }} />
               <YAxis
                 type="category"
                 dataKey="feature"
@@ -249,8 +280,8 @@ export default function ModelComparison() {
                 axisLine={false}
                 tick={{ fontSize: 10 }}
               />
-              <Tooltip content={<MetricTip decimals={3} />} cursor={{ fill: "#f1f4f7" }} />
-              <Bar dataKey="importance" fill="#176a58" radius={[0, 3, 3, 0]} />
+              <Tooltip content={<MetricTip decimals={3} />} cursor={{ fill: CURSOR }} />
+              <Bar dataKey="importance" fill={SERIES_MAIN} radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <p className="note">

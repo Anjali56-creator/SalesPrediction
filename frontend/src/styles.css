@@ -1,34 +1,57 @@
 /* =========================================================================
    styles.css  --  all the styling for the Sales Prediction dashboard
    =========================================================================
-   Colours are defined once as CSS variables so the whole site stays
-   consistent and can be changed from one place.
+   Colours are defined once as CSS variables (design tokens) so the whole
+   site stays consistent and can be changed from one place.
+
+   Palette: "Purple Raindrops" - magenta -> purple -> violet -> cyan-blue.
+   The same values live in theme.js for the charts.
    ========================================================================= */
 
 :root {
-  --ground: #f4f6f8;
+  /* -- brand palette ---------------------------------------------------- */
+  --magenta: #f72585;
+  --pink-purple: #b5179e;
+  --purple: #7209b7;
+  --deep-purple: #560bad;
+  --violet: #480ca8;
+  --primary: #3a0ca3;
+  --primary-dark: #24006b;
+  --blue: #4361ee;
+  --cyan: #4cc9f0;
+
+  /* -- neutrals: light cool-grey page, white cards, dark navy text ------ */
+  --ground: #f6f6fb;
   --surface: #ffffff;
-  --surface-alt: #eaeef2;
-  --ink: #131c28;
-  --ink-soft: #48545f;
-  --slate: #6b7785;
-  --rule: #dde3ea;
+  --surface-alt: #ededf6;
+  --ink: #111827;
+  --ink-soft: #3f4657;
+  --slate: #646b80;
+  --rule: #e2e4ef;
 
-  --accent: #176a58;
-  --accent-bright: #1f8a72;
-  --accent-soft: #dcefe9;
+  /* -- roles: which palette colour does which job ----------------------- */
+  --accent: var(--primary);            /* links, focus rings, active marks */
+  --accent-bright: var(--blue);        /* hover states                      */
+  --accent-soft: #eee9fb;              /* tinted card backgrounds           */
+  --accent-soft-border: #d3c8f3;
+  --accent-text: #2c0a82;              /* purple that is dark enough to read */
 
-  --navy: #16202b;
-  --navy-soft: #202d3b;
+  /* the two gradients used on the site - kept to a minimum on purpose */
+  --gradient-primary: linear-gradient(135deg, var(--purple) 0%, var(--primary) 100%);
+  --gradient-hero: linear-gradient(120deg, var(--primary) 0%, var(--violet) 45%, var(--blue) 100%);
 
-  --brick: #a8372a;
-  --ochre: #8a6110;
+  /* the sidebar: near-black navy with a faint violet cast */
+  --navy: #12102a;
+  --navy-soft: #1d1a3c;
+
+  /* feedback colour for errors */
+  --brick: #b3261e;
 
   --display: "Spectral", Georgia, serif;
   --body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
-  --shadow: 0 1px 2px rgba(19, 28, 40, 0.05), 0 4px 14px rgba(19, 28, 40, 0.045);
+  --shadow: 0 1px 2px rgba(17, 24, 39, 0.05), 0 4px 14px rgba(36, 0, 107, 0.06);
 }
 
 * {
@@ -67,7 +90,7 @@ h3 {
 
 .sidebar {
   background: var(--navy);
-  color: #cfd8e1;
+  color: #cdd0e4;
   padding: 26px 18px;
   display: flex;
   flex-direction: column;
@@ -89,7 +112,8 @@ h3 {
   height: 30px;
   flex-shrink: 0;
   border-radius: 6px;
-  background: var(--accent-bright);
+  background: var(--gradient-primary);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
   display: grid;
   place-items: center;
   font-family: var(--mono);
@@ -111,7 +135,7 @@ h3 {
   font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #7e8b99;
+  color: #8a8fb0;
 }
 
 .nav {
@@ -125,7 +149,7 @@ h3 {
   font-size: 10px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: #6c7986;
+  color: #6f74a0;
   padding: 0 8px 8px;
 }
 
@@ -137,7 +161,7 @@ h3 {
   text-align: left;
   background: none;
   border: none;
-  color: #b6c1cc;
+  color: #b3b8d6;
   font-family: var(--body);
   font-size: 14.5px;
   padding: 9px 10px;
@@ -152,9 +176,10 @@ h3 {
 }
 
 .nav button.active {
-  background: var(--accent);
+  background: var(--gradient-primary);
   color: #fff;
   font-weight: 600;
+  box-shadow: 0 4px 14px rgba(58, 12, 163, 0.35);
 }
 
 .nav .step {
@@ -168,7 +193,7 @@ h3 {
   font-family: var(--mono);
   font-size: 10.5px;
   line-height: 1.7;
-  color: #6c7986;
+  color: #6f74a0;
   padding-inline: 8px;
 }
 
@@ -177,12 +202,14 @@ h3 {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent-bright);
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.18);
   margin-right: 6px;
 }
 
 .dot.down {
-  background: var(--brick);
+  background: var(--magenta);
+  box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.18);
 }
 
 /* =========================================================================
@@ -291,15 +318,26 @@ h3 {
 
 .kpi.highlight {
   background: var(--accent-soft);
-  border-color: #b9dbd0;
+  border-color: var(--accent-soft-border);
+  position: relative;
+  overflow: hidden;
+}
+
+/* a thin purple -> cyan bar along the top marks the important tiles */
+.kpi.highlight::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--cyan));
 }
 
 .kpi.highlight .value {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .kpi.highlight .label {
-  color: var(--accent);
+  color: var(--primary);
 }
 
 /* =========================================================================
@@ -334,7 +372,7 @@ h3 {
 .tooltip .t-label {
   font-family: var(--mono);
   font-size: 11px;
-  color: #9fb0bf;
+  color: #a5a9cf;
   display: block;
   margin-bottom: 3px;
 }
@@ -388,7 +426,7 @@ thead th {
 tbody td {
   font-family: var(--mono);
   font-size: 13.5px;
-  border-bottom: 1px solid #eef2f6;
+  border-bottom: 1px solid #f0f1f8;
 }
 
 tbody td:first-child {
@@ -402,12 +440,13 @@ tbody tr:last-child td {
 
 tr.win td {
   background: var(--accent-soft);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
 tr.win td:first-child {
   font-weight: 700;
-  box-shadow: inset 3px 0 0 var(--accent);
+  box-shadow: inset 3px 0 0 var(--cyan);
 }
 
 .badge {
@@ -417,7 +456,7 @@ tr.win td:first-child {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--accent);
+  background: var(--gradient-primary);
   color: #fff;
   padding: 2px 7px;
   border-radius: 3px;
@@ -425,20 +464,102 @@ tr.win td:first-child {
   vertical-align: 1px;
 }
 
+/* Best-model banner at the top of the Model Comparison page */
+.winner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 36px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-border);
+  border-left: 4px solid var(--cyan);
+  border-radius: 8px;
+  padding: 18px 24px;
+  margin-bottom: 20px;
+}
+
+.winner .label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin: 0 0 4px;
+}
+
+.winner .name {
+  font-family: var(--display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--accent-text);
+  margin: 0;
+}
+
+.winner .stat {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.winner .stat small {
+  font-size: 11px;
+  color: var(--slate);
+  margin-left: 6px;
+}
+
 /* =========================================================================
    Home page
    ========================================================================= */
 
 .hero {
-  background: var(--navy);
-  color: #e6ecf2;
+  background: var(--gradient-hero);
+  color: #e9e7f7;
   border-radius: 10px;
   padding: 46px 44px;
   margin-bottom: 26px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(58, 12, 163, 0.22);
+}
+
+/* Two soft, blurred "raindrops" of cyan and magenta - the only place the
+   two accent colours appear at any size, and kept very faint. */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.hero::before {
+  width: 360px;
+  height: 360px;
+  right: -90px;
+  top: -140px;
+  background: rgba(76, 201, 240, 0.28);
+}
+
+.hero::after {
+  width: 260px;
+  height: 260px;
+  left: 40%;
+  bottom: -170px;
+  background: rgba(247, 37, 133, 0.2);
+}
+
+/* keep the text above the decorative blobs */
+.hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero .eyebrow {
-  color: #7f8e9d;
+  color: #b9c4f5;
 }
 
 .hero h1 {
@@ -451,12 +572,12 @@ tr.win td:first-child {
 .hero .subtitle {
   font-family: var(--display);
   font-size: clamp(1rem, 2.2vw, 1.2rem);
-  color: var(--accent-bright);
+  color: var(--cyan);
   margin: 0 0 20px;
 }
 
 .hero p.blurb {
-  color: #b4c0cc;
+  color: #d3d6f2;
   max-width: 64ch;
   margin: 0 0 26px;
 }
@@ -465,7 +586,7 @@ tr.win td:first-child {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  background: var(--accent-bright);
+  background: var(--gradient-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -474,30 +595,55 @@ tr.win td:first-child {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 4px 14px rgba(58, 12, 163, 0.28);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
 }
 
 .btn:hover {
-  background: #23a086;
+  background: var(--blue);
+  box-shadow: 0 6px 18px rgba(67, 97, 238, 0.35);
 }
 
 .btn:active {
   transform: translateY(1px);
 }
 
+.btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
 .btn:disabled {
   background: var(--slate);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
+/* On the purple hero a purple button would vanish, so it is inverted:
+   white with purple text. Everywhere else .btn keeps the gradient. */
+.hero .btn:not(.ghost) {
+  background: #fff;
+  color: var(--primary);
+  box-shadow: 0 4px 16px rgba(18, 16, 42, 0.25);
+}
+
+.hero .btn:not(.ghost):hover {
+  background: #eaf8fd;
+  color: var(--primary-dark);
+}
+
+/* Secondary button: transparent with a light outline (used on the hero) */
 .btn.ghost {
   background: transparent;
-  border: 1px solid #3a4a5a;
-  color: #cdd8e2;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+  box-shadow: none;
 }
 
 .btn.ghost:hover {
-  background: var(--navy-soft);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--cyan);
+  box-shadow: none;
 }
 
 .btn-row {
@@ -531,8 +677,8 @@ tr.win td:first-child {
 .chip {
   font-family: var(--mono);
   font-size: 11.5px;
-  background: var(--surface-alt);
-  color: var(--ink-soft);
+  background: var(--accent-soft);
+  color: var(--accent-text);
   padding: 4px 10px;
   border-radius: 4px;
 }
@@ -582,11 +728,21 @@ tr.win td:first-child {
   width: 100%;
 }
 
+.field input,
+.field select {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:hover,
+.field select:hover {
+  border-color: #c6c2e6;
+}
+
 .field input:focus,
 .field select:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-  border-color: var(--accent);
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
 .field .hint {
@@ -596,9 +752,21 @@ tr.win td:first-child {
 
 .result-panel {
   background: var(--navy);
-  color: #e6ecf2;
+  color: #e9e7f7;
   border-radius: 8px;
   padding: 26px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(18, 16, 42, 0.25);
+}
+
+/* a purple -> cyan bar along the top ties the panel to the KPI tiles */
+.result-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--blue), var(--cyan));
 }
 
 .result-panel .label {
@@ -606,7 +774,7 @@ tr.win td:first-child {
   font-size: 10.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7f8e9d;
+  color: #8a8fb0;
   margin: 0 0 10px;
 }
 
@@ -614,7 +782,7 @@ tr.win td:first-child {
   font-family: var(--display);
   font-size: clamp(2.1rem, 5vw, 2.9rem);
   font-weight: 700;
-  color: var(--accent-bright);
+  color: var(--cyan);
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
   margin: 0 0 6px;
@@ -622,12 +790,12 @@ tr.win td:first-child {
 
 .result-model {
   font-size: 14px;
-  color: #b4c0cc;
+  color: #b3b8d6;
   margin: 0 0 22px;
 }
 
 .compare-list {
-  border-top: 1px solid #2c3a49;
+  border-top: 1px solid #2b2850;
   padding-top: 16px;
   display: grid;
   gap: 10px;
@@ -642,7 +810,7 @@ tr.win td:first-child {
 }
 
 .compare-row .m {
-  color: #b4c0cc;
+  color: #b3b8d6;
 }
 
 .compare-row .v {
@@ -653,12 +821,16 @@ tr.win td:first-child {
 }
 
 .compare-row.is-best .m {
-  color: var(--accent-bright);
+  color: var(--cyan);
   font-weight: 600;
 }
 
+.compare-row.is-best .v {
+  color: var(--cyan);
+}
+
 .empty-result {
-  color: #8b98a6;
+  color: #9296bb;
   font-size: 14.5px;
   line-height: 1.7;
 }
@@ -677,10 +849,11 @@ tr.win td:first-child {
 }
 
 .state.error {
-  border-color: #e6c4bf;
-  background: #fbf0ee;
-  color: var(--brick);
+  border-color: #f2c3d6;
+  background: #fdf1f6;
+  color: #8f1a4f;
   text-align: left;
+  box-shadow: inset 3px 0 0 var(--magenta);
 }
 
 .state.error strong {
@@ -692,7 +865,7 @@ tr.win td:first-child {
 .state.error code {
   font-family: var(--mono);
   font-size: 12.5px;
-  background: #f4ded9;
+  background: #f8dde8;
   padding: 2px 6px;
   border-radius: 3px;
 }

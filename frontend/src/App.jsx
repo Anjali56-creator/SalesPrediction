@@ -27,8 +27,14 @@ const PAGES = [
   { id: "predict", step: "05", label: "Sales Prediction" },
 ];
 
+/* Lets a link like  ?page=predict  open that section directly. */
+function pageFromUrl() {
+  const wanted = new URLSearchParams(window.location.search).get("page");
+  return PAGES.some((item) => item.id === wanted) ? wanted : "home";
+}
+
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(pageFromUrl);
   const [backendUp, setBackendUp] = useState(null);
 
   // Check once, on load, whether the Python backend is running. This is what
