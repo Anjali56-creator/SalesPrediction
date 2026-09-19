@@ -1,406 +1,251 @@
-# Comparative Analysis of Sales Prediction Using Machine Learning Techniques
+<div align="center">
 
-A college mini-project that predicts the sales amount of a customer order using three
-machine-learning regression models and compares their performance to find the most
-suitable one.
+# 📈 Comparative Analysis of Sales Prediction Using Machine Learning
 
----
+**A full-stack ML case study that trains three regression models on 2,823 real sales orders, then serves the results — and live predictions — through a public website.**
 
-## Problem Statement
+[![Live Website](https://img.shields.io/badge/Website-Live-6b3fd4?style=for-the-badge&logo=vercel&logoColor=white)](https://sales-prediction-seven.vercel.app/)
+[![API Docs](https://img.shields.io/badge/API-FastAPI%20Docs-009485?style=for-the-badge&logo=fastapi&logoColor=white)](https://sales-prediction-api-l700.onrender.com/docs)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
 
-Businesses need to know how much revenue an order or a product line is likely to
-generate. Guessing leads to two costly mistakes: ordering too much stock (money stuck
-in a warehouse) or ordering too little (lost customers). Many different machine-learning
-algorithms can predict sales, but they do not all perform equally well on the same data.
+**🔗 [sales-prediction-seven.vercel.app](https://sales-prediction-seven.vercel.app/)** — open it, no install needed
 
-**The problem:** which regression algorithm predicts sales most accurately for this
-dataset, and why?
-
-## Objective
-
-1. Clean and prepare a real public sales dataset.
-2. Train three regression models — Linear Regression, Decision Tree, Random Forest.
-3. Evaluate all three using MAE, MSE, RMSE and R².
-4. Compare them in a single table and identify the best performer.
-5. Visualise the data, the predictions and the model comparison.
-6. Explain *why* the winning model won.
+</div>
 
 ---
 
-## Dataset
+## What this is
+
+Businesses need to know how much revenue an order is likely to generate — guess too high and money sits in a warehouse, guess too low and customers walk away. This project answers a narrower, more honest question first: **when three different machine-learning algorithms are trained on the *same* data and judged on the *same* unseen orders, which one actually wins, and why?**
+
+The answer is computed once by a Python script, saved to disk, and then **served untouched** by a FastAPI backend to a React website — so every chart, table and number you see below is real model output, not a mock-up.
 
 | | |
 |---|---|
-| **Name** | Sample Sales Data (public Kaggle dataset) |
-| **File** | `dataset/sales.csv` |
-| **Rows** | 2,823 order lines |
-| **Columns** | 25 |
-| **Period** | 6 January 2003 – 31 May 2005 |
-| **Target** | `SALES` — revenue of the order line |
+| 🌐 **Live website** | **https://sales-prediction-seven.vercel.app/** |
+| ⚙️ **Live API** | **https://sales-prediction-api-l700.onrender.com** ([interactive docs](https://sales-prediction-api-l700.onrender.com/docs)) |
+| 🏆 **Winning model** | Random Forest — **R² = 0.7411**, RMSE ≈ ₹1,063 |
+| 📦 **Dataset** | [Sample Sales Data](https://www.kaggle.com/datasets/kyanyoga/sample-sales-data) — 2,823 orders, Jan 2003 – May 2005 |
 
-### Columns used as features
-
-| Feature | Type | Meaning |
-|---|---|---|
-| `QUANTITYORDERED` | Numeric | Units ordered |
-| `MSRP` | Numeric | Manufacturer's suggested retail price |
-| `ORDER_YEAR` | Engineered | Year taken from the order date |
-| `ORDER_MONTH` | Engineered | Month — captures festive-season demand |
-| `ORDER_QUARTER` | Engineered | Quarter of the year |
-| `ORDER_DAYOFWEEK` | Engineered | Day of week (0 = Monday) |
-| `PRODUCTLINE` | Categorical | Product category (7 types) |
-| `COUNTRY` | Categorical | Customer country (19 countries) |
-| `TERRITORY` | Categorical | Region — EMEA, APAC, NA, Japan |
-
-After one-hot encoding the three categorical columns, the models see **33 features**.
-
-### Two columns deliberately excluded — and why
-
-This is the most important data-preparation decision in the project.
-
-**1. `DEALSIZE` — removed because of data leakage.**
-Checking the data shows the ranges do not overlap at all:
-
-| DEALSIZE | Min SALES | Max SALES |
-|---|---:|---:|
-| Small | 482.13 | 2,999.97 |
-| Medium | 3,002.40 | 6,996.42 |
-| Large | 7,016.31 | 14,082.80 |
-
-`DEALSIZE` is simply the answer itself put into buckets. Using it would give a near-perfect
-score that means nothing, because for a genuinely new order we would not know the deal
-size before knowing the sales.
-
-**2. `PRICEEACH` — removed because it is capped and too direct.**
-The column is capped at 100 (1,304 of 2,823 rows sit exactly at the cap), and for 1,519 rows
-`SALES` is literally `QUANTITYORDERED × PRICEEACH`. Feeding it in would reduce the task to a
-multiplication, and all three models would score near 1.00 — making the comparison useless.
-We use the uncapped `MSRP` instead.
-
-### Missing values
-
-| Column | Missing | What we did |
-|---|---:|---|
-| `TERRITORY` | 1,074 | **Not really missing.** These rows are the North America region written as the text `"NA"`, which pandas mistakes for *Not Available*. We put the text back. |
-| `ADDRESSLINE2` | 2,521 | Dropped — postal address detail, irrelevant to sales. |
-| `STATE` | 1,486 | Dropped — same reason. |
-| `POSTALCODE` | 76 | Dropped — same reason. |
-
-Duplicate records: **0 found** (checked with `drop_duplicates()`).
+> ⏳ **First load may take ~30–50 seconds.** The backend is hosted on Render's free tier, which sleeps when idle. The site's **API LIVE** pill turns green once it wakes up — just wait, no need to refresh.
 
 ---
 
-## Technologies Used
+## 📸 See it live
 
-| Technology | Purpose |
-|---|---|
-| Python 3.11 | Programming language |
-| pandas | Loading and cleaning the data |
-| NumPy | Numerical calculations |
-| Matplotlib | Plotting graphs |
-| Seaborn | Better-looking statistical graphs |
-| scikit-learn | Machine-learning models and metrics |
-| joblib | Saving the trained models to disk |
-| **FastAPI** | The backend web API that serves the models |
-| **Uvicorn** | The server that runs FastAPI |
-| **React + Vite** | The website the user actually sees |
-| **Recharts** | Interactive charts on the website |
-| Streamlit | An alternative simple dashboard (`app.py`) |
+<table>
+<tr><td width="100%">
 
-## Machine Learning Models
+### 1 · Hero — the headline result, up front
+<img src="docs/screenshots/01_hero.png" alt="Hero section showing the headline result: Random Forest, R² 0.7411, RMSE ₹1,063" width="100%">
 
-| Model | How it works in one line | Why we chose it |
-|---|---|---|
-| **Linear Regression** | Fits one straight-line equation through the data. | The simplest possible baseline — every other model must beat it to justify its complexity. |
-| **Decision Tree Regression** | Splits the data with a series of yes/no questions to form a tree of rules. | Can capture non-linear patterns that a straight line cannot, and the rules are easy to read. |
-| **Random Forest Regression** | Builds 200 different decision trees and averages their answers. | Averaging cancels out the mistakes of individual trees, usually giving the best accuracy and stability. |
+</td></tr>
+<tr><td>
 
-Model settings used: `DecisionTreeRegressor(max_depth=8)`,
-`RandomForestRegressor(n_estimators=200, max_depth=12)`, `random_state=42` throughout so the
-results are reproducible.
+### 2 · Overview — the 4-step pipeline in plain English
+<img src="docs/screenshots/02_overview.png" alt="Overview section explaining the collect, engineer, train, compare pipeline" width="100%">
 
----
+</td></tr>
+<tr><td>
 
-## Methodology
+### 3 · Dataset & Methodology — what went in, and what was deliberately left out
+<img src="docs/screenshots/03_dataset_method.png" alt="Dataset and methodology section with feature list, leakage warning, and the three models explained" width="100%">
 
-```
-1. Load dataset            ->  read sales.csv (latin-1 encoding)
-2. Understand dataset      ->  shape, info, summary statistics
-3. Handle missing values   ->  restore "NA" territory, drop address columns
-4. Remove duplicates       ->  drop_duplicates()
-5. Convert date column     ->  ORDERDATE to datetime
-6. Feature engineering     ->  year, month, quarter, day-of-week
-                           ->  exclude DEALSIZE (leakage) and PRICEEACH (capped)
-7. EDA                     ->  5 graphs (distribution, trend, category, region, correlation)
-8. Train-test split        ->  80% train (2,258 rows) / 20% test (565 rows)
-9. Train models            ->  Linear Regression, Decision Tree, Random Forest
-10. Predict                ->  predict on the unseen test set
-11. Evaluate               ->  MAE, MSE, RMSE, R2
-12. Comparison table       ->  outputs/results/model_comparison.csv
-13. Best model             ->  highest R2
-14. Actual vs predicted    ->  scatter plots + line plot
-15. Performance comparison ->  bar charts of MAE, RMSE, R2
-16. Feature importance     ->  from the Random Forest
-17. Conclusion             ->  outputs/results/conclusion.txt
-```
+</td></tr>
+<tr><td>
 
-## Evaluation Metrics
+### 4 · Sales Insights — the data, before any model touches it
+<img src="docs/screenshots/04_insights.png" alt="Sales insights dashboard with monthly revenue trend, revenue by product line and country, order-size distribution and scatter plots" width="100%">
 
-| Metric | Full name | What it tells us | Better when |
-|---|---|---|---|
-| **MAE** | Mean Absolute Error | The average size of the mistake, in sales units. Easiest to explain. | Lower |
-| **MSE** | Mean Squared Error | Average of the squared mistakes. Punishes large errors much more heavily. | Lower |
-| **RMSE** | Root Mean Squared Error | Square root of MSE, so it is back in sales units and directly comparable to MAE. | Lower |
-| **R²** | R-squared / Coefficient of Determination | The fraction of the variation in sales the model explains. 1.0 is perfect, 0 is no better than always guessing the average. | Higher |
+</td></tr>
+<tr><td>
+
+### 5 · Model Comparison — same test set, four metrics, one clear winner
+<img src="docs/screenshots/05_model_comparison.png" alt="Model comparison section with R², MAE, MSE, RMSE bar charts, actual-vs-predicted scatter plot and feature importance" width="100%">
+
+</td></tr>
+<tr><td>
+
+### 6 · Predict — run your own order through the trained models, live
+<img src="docs/screenshots/06_predict.png" alt="Prediction form with a live result: ₹3,442 predicted by Random Forest, compared against Linear Regression and Decision Tree" width="100%">
+
+*This is a real API response — Random Forest, Linear Regression and Decision Tree all scored the same input so you can see exactly how much the three models disagree.*
+
+</td></tr>
+</table>
 
 ---
+
+## The experiment, in one paragraph
+
+The [Sample Sales Data](https://www.kaggle.com/datasets/kyanyoga/sample-sales-data) set has 2,823 order lines. After restoring a `TERRITORY` value that pandas mis-read as a missing value, dropping three irrelevant address columns, and engineering four calendar features (`ORDER_YEAR`, `ORDER_MONTH`, `ORDER_QUARTER`, `ORDER_DAYOFWEEK`) from the order date, nine predictors were one-hot encoded into **33 model inputs**. Two columns — `DEALSIZE` and `PRICEEACH` — were **deliberately excluded** because they leak the answer (see [why, below](#the-most-important-decision-in-this-project)). The 2,823 rows were split 80/20 (`random_state = 42`); all three models trained on the same 2,258 rows and were scored on the same unseen 565.
 
 ## Results
 
-These are the **actual measured values** produced by running `python src/model.py`
-on the 565-row test set.
-
-| Model | MAE | MSE | RMSE | R² |
-| ----------------- | --------: | ------------: | -------: | -----: |
+| Model | MAE ↓ | MSE ↓ | RMSE ↓ | R² ↑ |
+|---|---:|---:|---:|---:|
 | Linear Regression | 709.68 | 1,342,382.90 | 1,158.61 | 0.6925 |
 | Decision Tree | 722.46 | 1,470,391.31 | 1,212.60 | 0.6631 |
-| **Random Forest** | **646.58** | **1,130,070.81** | **1,063.05** | **0.7411** |
+| **🏆 Random Forest** | **646.58** | **1,130,070.81** | **1,063.05** | **0.7411** |
 
-### Best model: Random Forest Regression
+**Random Forest wins on every metric.** It explains **74.11 %** of the variance in held-out sales and its typical prediction is off by about **₹1,063** against an average order value of **₹3,554**.
 
-It wins on every single metric — lowest MAE, lowest MSE, lowest RMSE and highest R².
-It explains **74.11%** of the variation in sales, and its typical prediction is off by about
-**1,063** against an average order value of about **3,554**.
+<details>
+<summary><b>Why Random Forest wins — and why a single Decision Tree doesn't (click to expand)</b></summary>
 
-### Random Forest feature importance
+<br>
 
-| Feature | Importance |
-|---|---:|
-| MSRP | 0.491 |
-| QUANTITYORDERED | 0.348 |
-| ORDER_MONTH | 0.039 |
-| ORDER_YEAR | 0.027 |
-| ORDER_DAYOFWEEK | 0.022 |
+- **Random Forest** trains 200 decision trees on slightly different random samples of the data and averages their answers. Each tree's mistakes are a little different, so averaging cancels much of that error out.
+- **Linear Regression** comes second with a very respectable score, because sales are roughly `quantity × price`, and a straight line already captures a lot of that. What it can't capture is the *multiplying* effect between the two.
+- **A single Decision Tree comes last** — a genuinely useful finding, not a bug. One tree predicts the same constant value for every order that lands in its leaf, producing a "staircase" instead of a smooth prediction (visible in the actual-vs-predicted chart above), and it memorises quirks of the training rows instead of the general pattern.
+- **The lesson:** a single tree is *not* automatically better than a simple linear model — it's the *combination* of many trees that wins.
 
-`MSRP` and `QUANTITYORDERED` together do about **84%** of the work. This matches business
-common sense: revenue is mostly price × quantity. The remaining features add smaller
-seasonal and regional refinements.
+</details>
 
-### Conclusion — why these results happened
+### The most important decision in this project
 
-**Random Forest performed best.** It trains 200 decision trees on slightly different samples of
-the data and averages their answers. The individual trees each make different mistakes, and
-averaging cancels those mistakes out. That gives predictions which are both more accurate and
-more stable than any single model here.
+Two columns looked like they would boost the score — and were removed on purpose, because using them would have been cheating:
 
-**Linear Regression came second.** Sales are roughly price × quantity, and a straight-line model
-already captures a good part of that relationship — which is why a very simple model scores a
-respectable 0.6925. What it fundamentally cannot capture is the *multiplying* effect between
-price and quantity, or seasonal jumps, so it falls behind the forest.
+| Column | Why it was excluded |
+|---|---|
+| `DEALSIZE` | It's literally the sales amount sorted into buckets (Small / Medium / Large). Using it to *predict* sales is circular — it wouldn't exist yet for a genuinely new order. |
+| `PRICEEACH` | Capped at 100 in the source file, and for 1,519 of 2,823 rows `SALES = QUANTITYORDERED × PRICEEACH` **exactly**. Keeping it would turn "predict sales" into "do a multiplication," and all three models would score ≈ 1.00 — technically impressive, practically meaningless. |
 
-**A single Decision Tree came last**, which is a genuinely useful result to discuss. A tree
-predicts one constant value for every order that lands in the same leaf, so its predictions form
-a "staircase" instead of a smooth line — this is clearly visible in
-`outputs/graphs/06_actual_vs_predicted.png`. It also fits the peculiarities of the particular
-training rows more than the general pattern. That is exactly the weakness Random Forest fixes.
-
-**The key lesson of this comparative analysis:** a single decision tree is *not* automatically
-better than a simple linear model. It is the **combination of many trees** that wins.
+Removing them lowers every model's score, but makes the comparison honest.
 
 ---
 
-## Project Structure
+## How the pieces fit together
 
 ```
-sales_prediction/
-│
-├── dataset/
-│   └── sales.csv                        # the public sales dataset
-│
-├── notebooks/
-│   └── sales_prediction.ipynb           # step-by-step notebook with explanations
-│
-├── src/
-│   └── model.py                         # the complete pipeline as one script
-│
-├── outputs/
-│   ├── graphs/                          # all 9 generated graphs
-│   │   ├── 01_sales_distribution.png
-│   │   ├── 02_sales_trend_over_time.png
-│   │   ├── 03_category_wise_sales.png
-│   │   ├── 04_region_wise_sales.png
-│   │   ├── 05_correlation_heatmap.png
-│   │   ├── 06_actual_vs_predicted.png
-│   │   ├── 07_actual_vs_predicted_best_model.png
-│   │   ├── 08_model_performance_comparison.png
-│   │   └── 09_random_forest_feature_importance.png
-│   └── results/
-│       ├── model_comparison.csv         # the comparison table
-│       ├── feature_importance.csv
-│       ├── conclusion.txt
-│       ├── cleaned_sales.csv
-│       └── trained_models.pkl           # saved models used by the dashboard
-│
-├── backend/                             # the web API
-│   ├── main.py                          # FastAPI routes
-│   └── ml_service.py                    # loads the trained models
-│
-├── frontend/                            # the React website
-│   ├── index.html
-│   ├── package.json
-│   └── src/
-│       ├── App.jsx                      # header nav + the sections in order
-│       ├── api.js                       # every call to the backend
-│       ├── theme.js                     # chart colour palette
-│       ├── styles.css                   # design tokens + all styling
-│       ├── components/Common.jsx        # section heading, figure, loading, error, useApi
-│       └── sections/                    # one file per section of the page
-│           ├── Hero.jsx                 #    title + headline result
-│           ├── Overview.jsx             # 01 project overview + pipeline
-│           ├── Methodology.jsx          # 02 dataset, features, models, metrics
-│           ├── Insights.jsx             # 03 sales analytics charts
-│           ├── Comparison.jsx           # 04 model comparison
-│           └── Predict.jsx              # 05 live prediction form
-│
-├── app.py                               # Streamlit dashboard (alternative)
-├── README.md
-├── RUN.md                               # how to start the website
-├── VIVA.md                              # 37 viva questions with answers
-└── requirements.txt
-```
-
----
-
-## The Website
-
-A full React dashboard sits on top of the machine learning, with five sections:
-**Home → Dashboard → Sales Analytics → Model Comparison → Sales Prediction**.
-
-### How the parts fit together
-
-```
-  src/model.py                  trains the 3 models ONCE and saves them
-        │                       to outputs/results/trained_models.pkl
+ python src/model.py          trains all 3 models ONCE, saves them to
+        │                     outputs/results/trained_models.pkl
         ▼
-  backend/ml_service.py         LOADS that file (it does not retrain)
+ backend/ml_service.py        LOADS that file — it never retrains
         │
         ▼
-  backend/main.py               exposes the data as a web API on port 8000
+ backend/main.py              FastAPI · exposes results as a JSON API
         │   ▲
         │   │  fetch() / POST
         ▼   │
-  frontend/src/api.js           the website's only link to the backend
+ frontend/src/api.js          the website's only link to the backend
         │
         ▼
-  React pages                   draw the KPIs, charts, table and form
+ React (Vite) pages           render the KPIs, charts, tables & form
 ```
 
-The important point for the viva: because the backend **loads the same saved
-models** rather than training its own, the website and the report can never
-disagree. Nothing on the website is typed in by hand.
+Because the website **loads the same saved models** the training script produced, the numbers on the site, in the exported PDF paper, and in `outputs/results/` can never disagree — nothing is typed in by hand.
 
-### How the prediction flow works
+### Live deployment
 
-1. The user fills in the form on the **Sales Prediction** page. The dropdown
-   choices were fetched from `GET /api/form-options`, so they always match the
-   real categories in the dataset.
-2. Pressing **Predict Sales** sends the values as JSON to `POST /api/predict`.
-3. FastAPI checks the values with a Pydantic model (for example, quantity must
-   be between 1 and 500) and returns a clear error if they are wrong.
-4. `ml_service.predict()` builds a one-row DataFrame, one-hot encodes it, and
-   calls `reindex()` so the columns are in exactly the same order the models saw
-   during training. **Without this reindex step the prediction would be wrong.**
-5. All three models predict, and the result is sent back as JSON.
-6. The website shows the chosen model's number in large type, plus all three
-   side by side so you can see how much they disagree.
+| Layer | Technology | Hosted on |
+|---|---|---|
+| Frontend | React 19 + Vite + Recharts | [Vercel](https://vercel.com) |
+| Backend / API | FastAPI + Uvicorn | [Render](https://render.com) (free tier) |
+| ML pipeline | pandas · scikit-learn · joblib | Runs once, offline — ships as a `.pkl` |
 
 ---
 
-## How to Run the Project
-
-### 1. Install the required libraries
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Run the complete analysis
-
-```bash
-python src/model.py
-```
-
-This prints every step to the screen and fills `outputs/graphs/` and `outputs/results/`.
-It takes about 10 seconds.
-
-### 3. Open the notebook (recommended for the viva)
-
-```bash
-jupyter notebook notebooks/sales_prediction.ipynb
-```
-
-Run the cells one by one — each has a markdown explanation above it.
-
-### 4. Launch the website (two terminals)
-
-**Terminal 1 — backend** (from the project folder):
-
-```bash
-python -m uvicorn backend.main:app --reload --port 8000
-```
-
-**Terminal 2 — frontend**:
-
-```bash
-cd frontend
-npm install      # first time only
-npm run dev
-```
-
-Then open **http://localhost:5173**.
+## Tech stack
 
 | | |
 |---|---|
-| **Frontend URL** | http://localhost:5173 |
-| **Backend URL** | http://localhost:8000 |
-| **API docs** | http://localhost:8000/docs |
+| **Language** | Python 3.11 |
+| **Data & ML** | pandas, NumPy, scikit-learn, joblib |
+| **Visualisation (analysis)** | Matplotlib, Seaborn |
+| **Backend** | FastAPI, Uvicorn, Pydantic |
+| **Frontend** | React, Vite, Recharts |
+| **Alternative dashboard** | Streamlit (`app.py`) |
+| **Deployment** | Vercel (frontend) · Render (backend) |
 
-Full details and troubleshooting are in **[RUN.md](RUN.md)**.
+## Machine learning models
 
-### 5. Optional — the simpler Streamlit dashboard
+| Model | Idea in one line | Configuration used |
+|---|---|---|
+| **Linear Regression** | Fits one straight-line equation through the data. | `fit_intercept=True` (default) |
+| **Decision Tree Regression** | Splits the data with a series of yes/no questions. | `max_depth=8`, `random_state=42` |
+| **Random Forest Regression** | Averages 200 different decision trees. | `n_estimators=200`, `max_depth=12`, `random_state=42` |
+
+Evaluated with **MAE**, **MSE**, **RMSE** and **R²** — see [`VIVA.md`](VIVA.md) for what each one means and why R² should never be called "accuracy."
+
+---
+
+## Run it yourself
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the full ML pipeline — trains all 3 models, writes graphs + results
+python src/model.py
+
+# 3a. Launch the backend API (terminal 1)
+python -m uvicorn backend.main:app --reload --port 8000
+
+# 3b. Launch the website (terminal 2)
+cd frontend
+npm install
+npm run dev
+```
+
+Then open **http://localhost:5173**. Full troubleshooting steps are in [`RUN.md`](RUN.md).
+
+<details>
+<summary><b>Optional: the simpler Streamlit dashboard</b></summary>
+
+<br>
 
 ```bash
 streamlit run app.py
 ```
 
-Then open the link it prints (usually `http://localhost:8501`). The dashboard has three tabs:
+Three tabs: **Sales Trends**, **Model Comparison**, and **Predict Sales**. Run `python src/model.py` first — the dashboard loads the models the script saves; it does not train its own.
 
-- **Sales Trends** — monthly trend, category-wise and country-wise sales, sample data
-- **Model Comparison** — the comparison table, bar charts and all project graphs
-- **Predict Sales** — enter quantity, MSRP, product line, country, territory and date, and get
-  a predicted sales amount from all three models side by side
-
-> Run `python src/model.py` before `streamlit run app.py`, because the dashboard loads the
-> trained models that the script saves.
+</details>
 
 ---
 
-## Future Scope
+## Project structure
 
-1. **Add advertising and discount data.** This dataset has no marketing spend column. Real
-   discount and advertising figures would very likely push R² well above 0.75.
-2. **Time-series forecasting.** Right now we predict the value of a single order. Predicting
-   *next month's total sales* would need time-aware models such as ARIMA or Prophet.
-3. **Hyperparameter tuning.** `GridSearchCV` could search for better `max_depth` and
-   `n_estimators` values instead of the sensible fixed values used here.
-4. **Cross-validation.** K-fold cross-validation would give a more reliable score than a single
-   80/20 split.
-5. **More models.** Gradient Boosting or XGBoost often beat Random Forest on tabular data.
-6. **Deployment.** The dashboard could be hosted on Streamlit Cloud so anyone can use it, and
-   connected to a live sales database instead of a CSV file.
+```
+sales_prediction/
+├── dataset/sales.csv                 the raw public dataset
+├── notebooks/sales_prediction.ipynb  step-by-step notebook with explanations
+├── src/model.py                      the complete ML pipeline, one script
+├── outputs/
+│   ├── graphs/                       9 EDA & results charts (.png)
+│   └── results/                      comparison table, trained models (.pkl)
+├── backend/                          FastAPI — main.py (routes), ml_service.py (loads models)
+├── frontend/                         React + Vite website (src/sections/*.jsx, api.js)
+├── docs/screenshots/                 the images used in this README
+├── paper/                            IEEE-format & academic research paper (PDF + source)
+├── app.py                            alternative Streamlit dashboard
+├── RUN.md                            how to run everything, with troubleshooting
+└── VIVA.md                           37 likely viva questions, answered simply
+```
+
+## Documentation
+
+| Document | What's in it |
+|---|---|
+| [`RUN.md`](RUN.md) | Step-by-step setup, ports, and troubleshooting |
+| [`VIVA.md`](VIVA.md) | Viva-ready Q&A on the dataset, models and metrics |
+| [`paper/`](paper) | A full research paper on this project — both a plain academic format and a proper IEEE two-column conference paper (PDF) |
+
+## Future scope
+
+- **Gradient Boosting / XGBoost** — prior literature on this exact task reports it beats Random Forest.
+- **Hyperparameter tuning** via `GridSearchCV` instead of the fixed depth/tree-count used here.
+- **Cross-validation** for a more reliable score than a single 80/20 split.
+- **Time-series forecasting** (ARIMA / Prophet) to predict *future* monthly totals, not just individual orders.
+- **Richer data** — discounts, promotions and marketing spend would very likely push R² well above 0.75.
 
 ---
 
-## Viva Preparation
+<div align="center">
 
-See **[VIVA.md](VIVA.md)** for 25 likely viva questions with simple, speakable answers.
+Built as a machine-learning mini-project · [Live site](https://sales-prediction-seven.vercel.app/) · [API docs](https://sales-prediction-api-l700.onrender.com/docs)
+
+</div>
